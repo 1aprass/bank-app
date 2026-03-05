@@ -1,0 +1,24 @@
+# Compiled files
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Logs
+logs/
+*.log
+
+# Build
+/build/
+/dist/
+
+# Misc
+.DS_Store
