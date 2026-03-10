@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: calculator
+calculator:
+  base-rate: 32
+  salary-client-bonus: 28
+  insurance-discount: 8
+
+  insurance:
+    utils:
+      months-in-year: 12
+      percent-conversion: 100
+
+    thresholds:
+      max-s: 1000000
+      fee-s: 20000
+      max-m: 3000000
+      fee-m: 80000
+      max-l: 5000000
+      fee-l: 150000
+      max-xl: 999999999
+      fee-xl: 250000
+  scoring:
+    age:
+      min: 20
+      max: 65
+    experience:
+      total-min: 18
+      current-min: 3
+    salary-multiplier: 24
+    rate-adjustments:
+      married: -3
+      divorced: 1
+      self-employed: 2
+      business-owner: 1
+      mid-manager: -2
+      top-manager: -3
+      female:
+        age-from: 32
+        age-to: 60
+        adjustment: -3
+      male:
+        age-from: 30
+        age-to: 55
+        adjustment: -3
+      non-binary: 7
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+

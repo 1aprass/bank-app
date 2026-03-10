@@ -19,19 +19,16 @@ public class EmploymentDto {
     @NotNull(message = "Employment status is required")
     private EmploymentStatus employmentStatus;
 
-    //@NotBlank(message = "INN is required")
     @Pattern(
             regexp = "^\\d{10}$|^\\d{12}$",
             message = "Employer INN must be 10 digits (legal entity) or 12 digits (individual entrepreneur)"
     )
     private String employerINN;
 
-    //@NotNull(message = "Salary is required")
-    @DecimalMin(value = "0.0", message = "Salary cannot be negative")
+    @Positive(message = "Salary must be positive")
     @Digits(integer = 8, fraction = 2, message = "Salary must have valid format (up to 8 integer and 2 fraction digits)")
     private BigDecimal salary;
 
-    //@NotNull(message = "Position is required")
     private Position position;
 
     @NotNull(message = "Total work experience is required")

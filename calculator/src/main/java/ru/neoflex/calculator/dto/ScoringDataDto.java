@@ -1,5 +1,6 @@
 package ru.neoflex.calculator.dto;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,7 @@ public class ScoringDataDto {
     private String passportIssueBranch;
     private MaritalStatus maritalStatus;
     private Integer dependentAmount;
+    @Valid
     private EmploymentDto employment;
     private String accountNumber;
     private Boolean isInsuranceEnabled;

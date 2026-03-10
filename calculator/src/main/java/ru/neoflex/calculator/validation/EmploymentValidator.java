@@ -14,9 +14,10 @@ public class EmploymentValidator implements ConstraintValidator<ValidEmployment,
 
         EmploymentStatus status = dto.getEmploymentStatus();
 
+        if(status == null) return false;
         if(status == UNEMPLOYED) return true;
-
-        if(dto.getEmployerINN() == null || dto.getSalary() == null || dto.getPosition() == null){
+        if(dto.getEmployerINN() == null || dto.getEmployerINN().isBlank()) return false;
+        if(dto.getSalary() == null || dto.getPosition() == null){
             return false;
         }
 
