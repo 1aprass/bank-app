@@ -23,7 +23,7 @@ public class LoanStatementRequestDto {
     @NotBlank(message = "firstName is required")
     @Pattern(
             regexp = "^[a-zA-Z]{2,30}$",
-            message = "first name must be from 2 to 30 characters"
+            message = "first name must be from 2 to 30 characters (only letters)"
     )
     private String firstName;
 

@@ -10,6 +10,7 @@ calculator:
     utils:
       months-in-year: 12
       percent-conversion: 100
+      days-in-year: 365
 
     thresholds:
       max-s: 1000000
@@ -47,5 +48,6 @@ calculator:
 
 logging:
   level:
+    ru.neoflex.calculator: DEBUG
     org.springframework.security: DEBUG
 

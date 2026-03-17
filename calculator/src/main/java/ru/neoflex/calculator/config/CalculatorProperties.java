@@ -31,6 +31,7 @@ public class CalculatorProperties {
 
         private int monthsInYear;
         private int percentConversion;
+        private int daysInYear;
 
         public int getMonthlyDivisor() {
             return monthsInYear * percentConversion;
