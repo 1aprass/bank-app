@@ -54,7 +54,7 @@ public class DealControllerFinishRegistrationTest {
 
     @Test
     void finishRegistration_success() throws Exception {
-        UUID statementId = UUID.randomUUID();
+        String statementId = UUID.randomUUID().toString().replace("-", "");
         FinishRegistrationRequestDto request = createValidRequest();
 
         doNothing().when(dealService)
@@ -66,17 +66,6 @@ public class DealControllerFinishRegistrationTest {
                 .andExpect(status().isOk());
 
         verify(dealService).finishRegistration(any(), eq(statementId));
-    }
-
-    @Test
-    void finishRegistration_invalidUUID_shouldReturn400() throws Exception {
-
-        mockMvc.perform(post("/deal/calculate/invalid-uuid")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createValidRequest())))
-                .andExpect(status().isBadRequest());
-
-        verify(dealService, never()).finishRegistration(any(), any());
     }
 
     @Test
@@ -92,7 +81,7 @@ public class DealControllerFinishRegistrationTest {
 
     @Test
     void finishRegistration_serviceThrowsBadRequest() throws Exception {
-        UUID id = UUID.randomUUID();
+        String id = UUID.randomUUID().toString().replace("-", "");
 
         doThrow(new IllegalArgumentException())
                 .when(dealService).finishRegistration(any(), eq(id));
@@ -106,7 +95,7 @@ public class DealControllerFinishRegistrationTest {
 
     @Test
     void finishRegistration_serviceThrowsServerError() throws Exception {
-        UUID id = UUID.randomUUID();
+        String id = UUID.randomUUID().toString().replace("-", "");
 
         doThrow(new RuntimeException())
                 .when(dealService).finishRegistration(any(), eq(id));
@@ -133,7 +122,7 @@ public class DealControllerFinishRegistrationTest {
         employment.setPosition(EmploymentPosition.WORKER);
         employment.setWorkExperienceTotal(120);
         employment.setWorkExperienceCurrent(60);
-        dto.setEmploymentDto(employment);
+        dto.setEmployment(employment);
 
         return dto;
     }

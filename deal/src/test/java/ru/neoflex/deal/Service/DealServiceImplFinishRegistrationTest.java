@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,8 +26,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DealServiceImplFinishRegistrationTest {
@@ -74,7 +72,7 @@ public class DealServiceImplFinishRegistrationTest {
         statement.setClient(client);
         statement.setAppliedOffer(new LoanOfferDto());
         statement.setApplicationStatus(ApplicationStatus.PREAPPROVAL);
-        statement.setStatusHistoryDto(new ArrayList<>());
+        statement.setStatusHistory(new ArrayList<>());
 
         loanOfferDto = new LoanOfferDto();
         loanOfferDto.setStatementId(statementId);
@@ -96,7 +94,7 @@ public class DealServiceImplFinishRegistrationTest {
         requestDto.setAccountNumber("1234567890");
         requestDto.setPassportIssueDate(LocalDate.of(2020, 1, 1));
         requestDto.setPassportIssueBranch("Test Branch");
-        requestDto.setEmploymentDto(new EmploymentDto());
+        requestDto.setEmployment(new EmploymentDto());
 
         CreditDto creditDto = new CreditDto();
         creditDto.setAmount(BigDecimal.valueOf(100_000));
@@ -120,12 +118,12 @@ public class DealServiceImplFinishRegistrationTest {
         when(clientRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(statementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        dealService.finishRegistration(requestDto, statementId);
+        dealService.finishRegistration(requestDto, statementId.toString());
 
         assertEquals(ApplicationStatus.CC_APPROVED, statement.getApplicationStatus());
         assertEquals(creditEntity, statement.getCredit());
-        assertEquals(1, statement.getStatusHistoryDto().size());
-        assertEquals(ApplicationStatus.CC_APPROVED, statement.getStatusHistoryDto().get(0).getStatus());
+        assertEquals(1, statement.getStatusHistory().size());
+        assertEquals(ApplicationStatus.CC_APPROVED, statement.getStatusHistory().get(0).getStatus());
 
         assertEquals(Gender.MALE, client.getGender());
         assertEquals(MaritalStatus.SINGLE, client.getMaritalStatus());
@@ -148,7 +146,7 @@ public class DealServiceImplFinishRegistrationTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-                () -> dealService.finishRegistration(requestDto, statementId));
+                () -> dealService.finishRegistration(requestDto, statementId.toString()));
         assertTrue(ex.getMessage().contains("Statement not found with id"));
     }
 
@@ -158,17 +156,17 @@ public class DealServiceImplFinishRegistrationTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
         FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
-        requestDto.setEmploymentDto(new EmploymentDto());
+        requestDto.setEmployment(new EmploymentDto());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-                () -> dealService.finishRegistration(requestDto, statementId));
+                () -> dealService.finishRegistration(requestDto, statementId.toString()));
 
         assertTrue(ex.getMessage().contains("Passport not found for client"));
     }
 
     @Test
     void finishRegistration_shouldAddStatusHistoryToExisting() {
-        statement.getStatusHistoryDto().add(new StatusHistoryDto());
+        statement.getStatusHistory().add(new StatementStatusHistoryDto());
 
         FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
         requestDto.setGender(Gender.MALE);
@@ -177,7 +175,7 @@ public class DealServiceImplFinishRegistrationTest {
         requestDto.setAccountNumber("1234567890");
         requestDto.setPassportIssueDate(LocalDate.of(2020, 1, 1));
         requestDto.setPassportIssueBranch("Branch");
-        requestDto.setEmploymentDto(new EmploymentDto());
+        requestDto.setEmployment(new EmploymentDto());
 
         CreditDto creditDto = new CreditDto();
         creditDto.setIsInsuranceEnabled(true);
@@ -192,10 +190,10 @@ public class DealServiceImplFinishRegistrationTest {
         when(clientRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(statementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        dealService.finishRegistration(requestDto, statementId);
+        dealService.finishRegistration(requestDto, statementId.toString());
 
-        assertEquals(2, statement.getStatusHistoryDto().size());
-        assertEquals(ApplicationStatus.CC_APPROVED, statement.getStatusHistoryDto().get(1).getStatus());
+        assertEquals(2, statement.getStatusHistory().size());
+        assertEquals(ApplicationStatus.CC_APPROVED, statement.getStatusHistory().get(1).getStatus());
     }
 
     @Test
@@ -206,7 +204,7 @@ public class DealServiceImplFinishRegistrationTest {
         FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-                () -> dealService.finishRegistration(requestDto, statementId));
+                () -> dealService.finishRegistration(requestDto, statementId.toString()));
         assertTrue(ex.getMessage().contains("Client not found for statement"));
     }
 
@@ -217,9 +215,9 @@ public class DealServiceImplFinishRegistrationTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
         FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
-        requestDto.setEmploymentDto(new EmploymentDto());
+        requestDto.setEmployment(new EmploymentDto());
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
-                () -> dealService.finishRegistration(requestDto, statementId));
+                () -> dealService.finishRegistration(requestDto, statementId.toString()));
         assertTrue(ex.getMessage().contains("Passport not found for client"));
     }
 
@@ -233,11 +231,21 @@ public class DealServiceImplFinishRegistrationTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
         FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
-        requestDto.setEmploymentDto(new EmploymentDto());
+        requestDto.setEmployment(new EmploymentDto());
 
         IllegalStateException ex = assertThrows(IllegalStateException.class,
-                () -> dealService.finishRegistration(requestDto, statementId));
+                () -> dealService.finishRegistration(requestDto, statementId.toString()));
         assertTrue(ex.getMessage().contains("Applied offer not found for statement"));
+    }
+    @Test
+    void finishRegistration_invalidUUID_shouldThrowException() {
+        String invalidUuid = "not-a-uuid";
+        FinishRegistrationRequestDto requestDto = new FinishRegistrationRequestDto();
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                dealService.finishRegistration(requestDto, invalidUuid)
+        );
+        assert exception.getMessage().contains("Invalid statementId format");
+        verify(statementRepository, never()).findById(any(UUID.class));
     }
 
 

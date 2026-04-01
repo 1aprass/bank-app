@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bank-app
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:483711}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,3 +22,7 @@ logging:
   level:
     ru.neoflex.deal: DEBUG
     org.springframework.security: DEBUG
+
+deal:
+  service:
+    base-url: http://localhost:8080

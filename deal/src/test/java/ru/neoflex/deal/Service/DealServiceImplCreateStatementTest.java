@@ -1,6 +1,5 @@
 package ru.neoflex.deal.Service;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,10 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.neoflex.deal.client.DealClient;
-import ru.neoflex.deal.dto.FinishRegistrationRequestDto;
 import ru.neoflex.deal.dto.LoanOfferDto;
 import ru.neoflex.deal.dto.LoanStatementRequestDto;
-import ru.neoflex.deal.dto.ScoringDataDto;
 import ru.neoflex.deal.entity.Client;
 import ru.neoflex.deal.entity.Passport;
 import ru.neoflex.deal.entity.Statement;
@@ -92,10 +89,10 @@ public class DealServiceImplCreateStatementTest {
 
         Statement saved = captor.getValue();
 
-        assertNotNull(saved.getStatusHistoryDto());
-        assertEquals(1, saved.getStatusHistoryDto().size());
+        assertNotNull(saved.getStatusHistory());
+        assertEquals(1, saved.getStatusHistory().size());
         assertEquals(ApplicationStatus.PREAPPROVAL,
-                saved.getStatusHistoryDto().get(0).getStatus());
+                saved.getStatusHistory().get(0).getStatus());
     }
 
     @Test

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 import ru.neoflex.deal.dto.LoanOfferDto;
-import ru.neoflex.deal.dto.StatusHistoryDto;
+import ru.neoflex.deal.dto.StatementStatusHistoryDto;
 import ru.neoflex.deal.enums.ApplicationStatus;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public class Statement {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "credit_id")
     private Credit credit;
 
@@ -51,5 +51,5 @@ public class Statement {
 
     @Type(JsonType.class)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private List<StatusHistoryDto> statusHistoryDto;
+    private List<StatementStatusHistoryDto> statusHistory;
 }

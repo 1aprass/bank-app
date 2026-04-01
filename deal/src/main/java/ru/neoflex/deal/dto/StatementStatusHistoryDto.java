@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Setter
 @Getter
-public class StatusHistoryDto {
+public class StatementStatusHistoryDto {
     private ApplicationStatus status;
     private LocalDateTime time;
     private ChangeType changeType;

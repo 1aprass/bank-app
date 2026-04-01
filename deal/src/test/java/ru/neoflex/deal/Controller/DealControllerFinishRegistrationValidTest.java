@@ -155,7 +155,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenEmploymentDtoIsNull() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.setEmploymentDto(null);
+        dto.setEmployment(null);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +166,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenEmploymentStatusIsNull() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setEmploymentStatus(null);
+        dto.getEmployment().setEmploymentStatus(null);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +177,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenEmployerINNInvalid() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setEmployerINN("123");
+        dto.getEmployment().setEmployerINN("123");
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -188,7 +188,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenSalaryNegative() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setSalary(BigDecimal.valueOf(-100));
+        dto.getEmployment().setSalary(BigDecimal.valueOf(-100));
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -199,7 +199,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenPositionIsNull() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setPosition(null);
+        dto.getEmployment().setPosition(null);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -210,7 +210,7 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenWorkExperienceTotalNegative() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setWorkExperienceTotal(-1);
+        dto.getEmployment().setWorkExperienceTotal(-1);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -221,8 +221,8 @@ public class DealControllerFinishRegistrationValidTest {
     @Test
     void shouldFail_whenCurrentExperienceGreaterThanTotal() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmploymentDto().setWorkExperienceTotal(10);
-        dto.getEmploymentDto().setWorkExperienceCurrent(20);
+        dto.getEmployment().setWorkExperienceTotal(10);
+        dto.getEmployment().setWorkExperienceCurrent(20);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -248,7 +248,7 @@ public class DealControllerFinishRegistrationValidTest {
         employment.setPosition(EmploymentPosition.WORKER);
         employment.setWorkExperienceTotal(120);
         employment.setWorkExperienceCurrent(60);
-        dto.setEmploymentDto(employment);
+        dto.setEmployment(employment);
 
         return dto;
     }

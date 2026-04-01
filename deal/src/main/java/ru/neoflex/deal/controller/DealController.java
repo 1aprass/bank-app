@@ -13,7 +13,6 @@ import ru.neoflex.deal.dto.LoanStatementRequestDto;
 import ru.neoflex.deal.service.DealService;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -45,7 +44,7 @@ public class DealController {
     @PostMapping("/calculate/{statementId}")
     @Operation(summary = "Finishing registration and calculating final loan payment")
     public ResponseEntity<Void> finishRegistration(@Valid @RequestBody FinishRegistrationRequestDto finishRegistrationRequestDto,
-                                                   @PathVariable UUID statementId ){
+                                                   @PathVariable String statementId ){
         log.info("Input. DealController finishRegistration(): request sent");
         dealService.finishRegistration(finishRegistrationRequestDto, statementId);
         log.info("Output. DealController finishRegistration(): request received");

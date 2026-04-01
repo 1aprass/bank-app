@@ -100,20 +100,27 @@ public class DealServiceImpl implements DealService {
 
     @Transactional
     @Override
-    public void finishRegistration(FinishRegistrationRequestDto requestDto, UUID statementId) {
+    public void finishRegistration(FinishRegistrationRequestDto requestDto, String statementId) {
         log.info("finishRegistration. Input - Start finishRegistration for statementId={}", statementId);
         log.debug("FinishRegistrationRequestDto: {}", requestDto);
 
-        Statement statement = statementRepository.findById(statementId)
+        UUID statementID;
+        try {
+            statementID = UUID.fromString(statementId);
+        } catch (IllegalArgumentException ex){
+            log.error("Invalid UUID format for statementId={}", statementId, ex);
+            throw new IllegalArgumentException("Invalid statementId format: " + statementId);
+        }
+        Statement statement = statementRepository.findById(statementID)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Statement not found with id: " + statementId));
+                        "Statement not found with id: " + statementID));
 
         ScoringDataDto scoringDataDto = new ScoringDataDto();
         createScoringDataDto(scoringDataDto, statement, requestDto);
         log.debug("finishRegistration. ScoringDataDto created: {}", scoringDataDto);
 
         CreditDto creditDto = dealClient.getFinishRegistration(scoringDataDto);
-        log.info("finishRegistration. Output - Received CreditDto from calculator for statementId={}", statementId);
+        log.info("finishRegistration. Output - Received CreditDto from calculator for statementID={}", statementID);
         log.debug("finishRegistration. CreditDto: {}", creditDto);
 
         Credit credit = creditMapper.toEntity(creditDto);
@@ -139,7 +146,7 @@ public class DealServiceImpl implements DealService {
         passport.setIssueBranch(requestDto.getPassportIssueBranch());
         passport.setIssueDate(requestDto.getPassportIssueDate());
 
-        EmploymentDto employmentDto = requestDto.getEmploymentDto();
+        EmploymentDto employmentDto = requestDto.getEmployment();
         Employment employment = employmentMapper.toEntity(employmentDto);
 
         employmentRepository.save(employment);
@@ -150,24 +157,24 @@ public class DealServiceImpl implements DealService {
         log.debug("finishRegistration. Employment saved with employment={}", employment);
 
         statementRepository.save(statement);
-        log.info("finishRegistration. Output - finishRegistration completed, statement {} moved to CC_APPROVED", statementId);
+        log.info("finishRegistration. Output - finishRegistration completed, statement {} moved to CC_APPROVED", statementID);
     }
 
     private void addStatusHistory(Statement statement,
                                   ApplicationStatus status,
                                   ChangeType changeType) {
 
-        StatusHistoryDto history = new StatusHistoryDto();
+        StatementStatusHistoryDto history = new StatementStatusHistoryDto();
         history.setStatus(status);
         history.setTime(LocalDateTime.now());
         history.setChangeType(changeType);
 
-        List<StatusHistoryDto> historyList = Optional
-                .ofNullable(statement.getStatusHistoryDto())
+        List<StatementStatusHistoryDto> historyList = Optional
+                .ofNullable(statement.getStatusHistory())
                 .orElse(new ArrayList<>());
 
         historyList.add(history);
-        statement.setStatusHistoryDto(historyList);
+        statement.setStatusHistory(historyList);
     }
 
     private void createScoringDataDto(ScoringDataDto scoringDataDto,
@@ -199,7 +206,7 @@ public class DealServiceImpl implements DealService {
         scoringDataDto.setGender(requestDto.getGender());
         scoringDataDto.setMaritalStatus(requestDto.getMaritalStatus());
         scoringDataDto.setDependentAmount(requestDto.getDependentAmount());
-        scoringDataDto.setEmployment(requestDto.getEmploymentDto());
+        scoringDataDto.setEmployment(requestDto.getEmployment());
         scoringDataDto.setAccountNumber(requestDto.getAccountNumber());
         scoringDataDto.setPassportSeries(passport.getSeries());
         scoringDataDto.setPassportNumber(passport.getNumber());

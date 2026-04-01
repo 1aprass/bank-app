@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.neoflex.deal.validation.ValidEmployment;
 import ru.neoflex.deal.enums.EmploymentPosition;
 import ru.neoflex.deal.enums.EmploymentStatus;
 
@@ -14,7 +13,6 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ValidEmployment
 public class EmploymentDto {
 
     @NotNull(message = "Employment status is required")

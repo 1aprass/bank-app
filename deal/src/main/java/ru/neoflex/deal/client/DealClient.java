@@ -1,12 +1,12 @@
 package ru.neoflex.deal.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import ru.neoflex.deal.dto.CreditDto;
 import ru.neoflex.deal.dto.LoanOfferDto;
 import ru.neoflex.deal.dto.LoanStatementRequestDto;
@@ -18,39 +18,38 @@ import java.util.List;
 @Service
 public class DealClient {
 
-    public List<LoanOfferDto> createStatement(LoanStatementRequestDto request) {
+    private final RestClient client;
 
-        WebClient client = WebClient.builder()
+    public DealClient(@Value("${deal.service.base-url}") String baseUrl) {
+        this.client = RestClient.builder()
+                .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .baseUrl("http://localhost:8080")
                 .build();
+    }
 
-        ResponseEntity<List<LoanOfferDto>> response = client.post()
-                .uri("/calculator/offers")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .toEntityList(LoanOfferDto.class)
-                .block();
-
-        return response.getBody();
+    public List<LoanOfferDto> createStatement(LoanStatementRequestDto request) {
+        try {
+            return client.post()
+                    .uri("/calculator/offers")
+                    .body(request)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<List<LoanOfferDto>>() {});
+        } catch (Exception e) {
+            log.error("Error creating loan statement", e);
+            throw e;
+        }
     }
 
     public CreditDto getFinishRegistration(ScoringDataDto scoringDataDto) {
-
-        WebClient client = WebClient.builder()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .baseUrl("http://localhost:8080")
-                .build();
-
-        ResponseEntity<CreditDto> response = client.post()
-                .uri("/calculator/calc")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(scoringDataDto)
-                .retrieve()
-                .toEntity(CreditDto.class)
-                .block();
-
-        return response.getBody();
+        try {
+            return client.post()
+                    .uri("/calculator/calc")
+                    .body(scoringDataDto)
+                    .retrieve()
+                    .body(CreditDto.class);
+        } catch (Exception e) {
+            log.error("Error finishing registration", e);
+            throw e;
+        }
     }
 }

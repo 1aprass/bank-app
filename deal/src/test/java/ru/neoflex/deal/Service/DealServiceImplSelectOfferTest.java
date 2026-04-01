@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.neoflex.deal.dto.LoanOfferDto;
+import ru.neoflex.deal.dto.StatementStatusHistoryDto;
 import ru.neoflex.deal.entity.Client;
 import ru.neoflex.deal.entity.Passport;
 import ru.neoflex.deal.entity.Statement;
@@ -53,7 +54,7 @@ public class DealServiceImplSelectOfferTest {
         statement.setStatementId(statementId);
         statement.setClient(client);
         statement.setApplicationStatus(ApplicationStatus.PREAPPROVAL);
-        statement.setStatusHistoryDto(new ArrayList<>());
+        statement.setStatusHistory(new ArrayList<>());
 
         LoanOfferDto request = new LoanOfferDto();
         request.setStatementId(statementId);
@@ -78,11 +79,11 @@ public class DealServiceImplSelectOfferTest {
 
         assertEquals(request, saved.getAppliedOffer());
 
-        assertNotNull(saved.getStatusHistoryDto());
-        assertEquals(1, saved.getStatusHistoryDto().size());
-        assertEquals(ApplicationStatus.APPROVED, saved.getStatusHistoryDto().get(0).getStatus());
-        assertEquals(ChangeType.MANUAL, saved.getStatusHistoryDto().get(0).getChangeType());
-        assertNotNull(saved.getStatusHistoryDto().get(0).getTime());
+        assertNotNull(saved.getStatusHistory());
+        assertEquals(1, saved.getStatusHistory().size());
+        assertEquals(ApplicationStatus.APPROVED, saved.getStatusHistory().get(0).getStatus());
+        assertEquals(ChangeType.MANUAL, saved.getStatusHistory().get(0).getChangeType());
+        assertNotNull(saved.getStatusHistory().get(0).getTime());
     }
 
 
@@ -108,8 +109,8 @@ public class DealServiceImplSelectOfferTest {
         statement.setStatementId(statementId);
         statement.setClient(new Client());
         List history = new ArrayList<>();
-        history.add(new ru.neoflex.deal.dto.StatusHistoryDto());
-        statement.setStatusHistoryDto(history);
+        history.add(new StatementStatusHistoryDto());
+        statement.setStatusHistory(history);
 
         LoanOfferDto request = new LoanOfferDto();
         request.setStatementId(statementId);
@@ -126,7 +127,7 @@ public class DealServiceImplSelectOfferTest {
 
         dealService.selectOffer(request);
 
-        assertEquals(2, statement.getStatusHistoryDto().size());
-        assertEquals(ApplicationStatus.APPROVED, statement.getStatusHistoryDto().get(1).getStatus());
+        assertEquals(2, statement.getStatusHistory().size());
+        assertEquals(ApplicationStatus.APPROVED, statement.getStatusHistory().get(1).getStatus());
     }
 }

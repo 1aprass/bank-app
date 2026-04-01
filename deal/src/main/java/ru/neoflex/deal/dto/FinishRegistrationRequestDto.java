@@ -1,10 +1,7 @@
 package ru.neoflex.deal.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import ru.neoflex.deal.enums.Gender;
@@ -22,7 +19,7 @@ public class FinishRegistrationRequestDto {
     private MaritalStatus maritalStatus;
 
     @NotNull
-    @Positive(message = "dependentAmount must be positive")
+    @PositiveOrZero(message = "dependentAmount must be positive or zero")
     private Integer dependentAmount;
 
     @NotNull(message = "passport issue date is required")
@@ -34,7 +31,7 @@ public class FinishRegistrationRequestDto {
 
     @Valid
     @NotNull
-    private EmploymentDto employmentDto;
+    private EmploymentDto employment;
 
     @NotBlank(message = "accountNumber is required")
     private String accountNumber;
