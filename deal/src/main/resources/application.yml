@@ -1,0 +1,28 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: deal
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank-app
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    ru.neoflex.deal: DEBUG
+    org.springframework.security: DEBUG
+
+deal:
+  service:
+    base-url: http://localhost:8080
