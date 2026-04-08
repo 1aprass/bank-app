@@ -88,8 +88,12 @@ public class DealServiceImpl implements DealService {
         log.info("selectOffer. Input - Start selectOffer for statementId={}", request.getStatementId());
         log.debug("selectOffer. LoanOfferDto: {}", request);
 
-        Statement statement = statementRepository.findById(request.getStatementId())
-                .orElseThrow(() -> new EntityNotFoundException("Statement not found with id: " + request.getStatementId()));
+        UUID statementId = request.getStatementId();
+
+        Statement statement = statementRepository.findByIdWithLock(statementId)
+                .orElseThrow(() -> {log.error("Statement not found with id: {}", statementId);
+                    return new EntityNotFoundException("Statement not found: " + statementId);});
+
         statement.setApplicationStatus(ApplicationStatus.APPROVED);
         statement.setAppliedOffer(request);
 

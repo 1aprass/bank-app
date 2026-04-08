@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: deal
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    default-schema: public
+    drop-first: false
 
   datasource:
     url: jdbc:postgresql://localhost:5432/bank-app
@@ -13,7 +18,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
