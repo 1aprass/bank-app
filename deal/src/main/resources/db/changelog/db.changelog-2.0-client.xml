@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="3" author="Daria">
+        <createTable tableName="client">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(255)" />
+            <column name="last_name" type="varchar(255)" />
+            <column name="middle_name" type="varchar(30)" />
+            <column name="birth_date" type="date" />
+            <column name="email" type="varchar(255)">
+                <constraints unique="true"/>
+            </column>
+            <column name="gender" type="varchar(10)" />
+            <column name="marital_status" type="varchar(20)" />
+            <column name="dependent_amount" type="integer" />
+            <column name="passport_id" type="uuid" />
+            <column name="employment_id" type="uuid" />
+            <column name="account_number" type="varchar(50)" />
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="client"
+                                 baseColumnNames="passport_id"
+                                 referencedTableName="passport"
+                                 referencedColumnNames="passport_uuid"
+                                 constraintName="fk_client_passport"/>
+
+        <addForeignKeyConstraint baseTableName="client"
+                                 baseColumnNames="employment_id"
+                                 referencedTableName="employment"
+                                 referencedColumnNames="employment_uuid"
+                                 constraintName="fk_client_employment"/>
+    </changeSet>
+</databaseChangeLog>

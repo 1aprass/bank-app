@@ -1,0 +1,15 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: statement
+
+logging:
+  level:
+    ru.neoflex.statement: DEBUG
+    org.springframework.security: DEBUG
+
+statement:
+  client:
+    base-url: http://localhost:8081
