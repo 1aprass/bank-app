@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/deal-test
-    username: ${DbTest_USERNAME:postgres}
-    password: ${DbTest_PASSWORD:483711}
+    username: ${DbTest_USERNAME}
+    password: ${DbTest_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
