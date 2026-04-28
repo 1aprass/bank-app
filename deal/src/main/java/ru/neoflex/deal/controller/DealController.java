@@ -51,4 +51,30 @@ public class DealController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/document/{statementId}/send")
+    @Operation(summary = "request to send documents to the client")
+    public ResponseEntity<Void> sendDocuments(@PathVariable String statementId) {
+        log.info("Input. DealController sendDocuments(). Request with {} sent", statementId);
+        dealService.sendDocuments(statementId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/document/{statementId}/sign")
+    @Operation(summary = "request to sign documents to the client")
+    public ResponseEntity<Void> requestSignDocuments(@PathVariable String statementId) {
+        log.info("Input. DealController requestSignDocuments(). Request with {} sent", statementId);
+        dealService.requestSignDocuments(statementId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/document/{statementId}/code")
+    @Operation(summary = "sign documents")
+    public ResponseEntity<Void> signDocuments(
+            @PathVariable String statementId,
+            @RequestParam String sesCode) {
+        log.info("Input. DealController signDocuments(). Request with {} sent", statementId);
+        dealService.signDocuments(statementId, sesCode);
+        return ResponseEntity.ok().build();
+    }
+
 }

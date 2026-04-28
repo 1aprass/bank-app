@@ -1,0 +1,43 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: dossier
+
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: dossier-group
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: java.util.Map
+
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.ssl.enable: true
+      mail.smtp.socketFactory.port: 465
+      mail.smtp.socketFactory.class: javax.net.ssl.SSLSocketFactory
+      mail.debug: true
+      mail.smtp.from: ${EMAIL_USERNAME}
+
+logging:
+  level:
+    ru.neoflex.dossier: DEBUG
+    org.springframework.security: DEBUG
+
+dossier:
+  service: "laprasspop@yandex.ru"
