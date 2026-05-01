@@ -4,6 +4,13 @@ server:
 spring:
   application:
     name: deal
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
@@ -31,3 +38,14 @@ logging:
 deal:
   service:
     base-url: http://localhost:8080
+
+  app:
+    public-url: http://localhost:8084/deal/document/
+
+  topics:
+    finish-registration: finish-registration
+    create-documents: create-documents
+    send-documents: send-documents
+    send-ses: send-ses
+    credit-issued: credit-issued
+    statement-denied: statement-denied
