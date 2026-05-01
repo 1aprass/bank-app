@@ -21,7 +21,7 @@ public class KafkaConsumerService {
     public void handleFinishRegistration(Map<String, Object> message) {
         log.info("Received FINISH_REGISTRATION {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
@@ -30,7 +30,7 @@ public class KafkaConsumerService {
     public void createDocuments(Map<String, Object> message) {
         log.info("Received CREATE_DOCUMENTS {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
@@ -39,7 +39,7 @@ public class KafkaConsumerService {
     public void sendDocuments(Map<String, Object> message) {
         log.info("Received SEND_DOCUMENTS {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
@@ -48,7 +48,7 @@ public class KafkaConsumerService {
     public void sendSes(Map<String, Object> message) {
         log.info("Received SEND_SES {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
@@ -57,7 +57,7 @@ public class KafkaConsumerService {
     public void creditIssued(Map<String, Object> message) {
         log.info("Received CREDIT_ISSUED {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
@@ -66,10 +66,35 @@ public class KafkaConsumerService {
     public void statementDenied(Map<String, Object> message) {
         log.info("Received STATEMENT_DENIED {}", message);
         EmailMessageDto dto = emailMessageMapper.toDto(message);
-        if (dto != null) {
+        if (validDto(dto)) {
             emailService.sendEmail(dto);
         }
     }
 
+    public boolean validDto(EmailMessageDto dto){
+        if(dto == null) return false;
+        boolean valid = true;
+
+        if(dto.getAddress() == null || dto.getAddress().isBlank()){
+            log.error("KafkaConsumerService. Email address is null or empty");
+            valid = false;
+        }
+
+        if(dto.getText() == null || dto.getText().isBlank()){
+            log.error("KafkaConsumerService. Text for message is null or empty");
+            valid = false;
+        }
+
+        if(dto.getStatementId() == null || dto.getStatementId().isBlank()){
+            log.error("KafkaConsumerService. Statement id is null or empty");
+            valid = false;
+        }
+
+        if (dto.getTheme() == null) {
+            log.error("KafkaConsumerService. Email theme is null");
+            valid = false;
+        }
+        return valid;
+    }
 
 }

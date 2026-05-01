@@ -1,12 +1,13 @@
 package ru.neoflex.dossier.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.neoflex.dossier.dto.EmailMessageDto;
 import ru.neoflex.dossier.enums.ThemeEnum;
 
 import java.util.Map;
 
-
+@Slf4j
 @Component
 public class EmailMessageMapper {
 
@@ -14,12 +15,17 @@ public class EmailMessageMapper {
         if (map == null) {
             return null;
         }
+        ThemeEnum theme = getTheme(map, "theme");
+        if(theme == null){
+            log.error("EmailMessageMapper. Invalid or missing theme in message: {}", map);
+            return null;
+        }
 
         EmailMessageDto dto = new EmailMessageDto();
         dto.setAddress(getString(map, "address"));
         dto.setText(getString(map, "text"));
         dto.setStatementId(getString(map, "statementId"));
-        dto.setTheme(getTheme(map, "theme"));
+        dto.setTheme(theme);
 
         return dto;
     }

@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import ru.neoflex.deal.client.DealClient;
+import ru.neoflex.deal.config.AppConfig;
+import ru.neoflex.deal.config.KafkaTopicsConfig;
 import ru.neoflex.deal.dto.*;
 import ru.neoflex.deal.entity.*;
 import ru.neoflex.deal.enums.ApplicationStatus;
@@ -39,6 +42,8 @@ public class DealServiceImpl implements DealService {
     private final EmploymentMapper employmentMapper;
     private final PassportRepository passportRepository;
     private final KafkaProducerService kafkaProducer;
+    private final KafkaTopicsConfig kafkaTopics;
+    private final AppConfig appConfig;
 
     @Transactional
     @Override
@@ -102,6 +107,8 @@ public class DealServiceImpl implements DealService {
         statement.setAppliedOffer(request);
 
         addStatusHistory(statement, ApplicationStatus.APPROVED, ChangeType.MANUAL);
+        statementRepository.save(statement);
+
         log.info("selectOffer. Output - offer selected and statement {} updated to APPROVED", statement.getStatementId());
 
         EmailMessageDto emailMessageDto = new EmailMessageDto();
@@ -109,10 +116,9 @@ public class DealServiceImpl implements DealService {
         emailMessageDto.setAddress(statement.getClient().getEmail());
         emailMessageDto.setText("Complete the registration");
         emailMessageDto.setTheme(ThemeEnum.FINISH_REGISTRATION);
-        kafkaProducer.sendMessage("finish-registration", emailMessageDto);
+        kafkaProducer.sendMessage(kafkaTopics.getFinishRegistration(), emailMessageDto);
 
         log.info("selectOffer. Output - offer was sent to kafka {}", emailMessageDto);
-        statementRepository.save(statement);
     }
 
     @Transactional
@@ -139,7 +145,7 @@ public class DealServiceImpl implements DealService {
         CreditDto creditDto = null;
         try {
             creditDto = dealClient.getFinishRegistration(scoringDataDto);
-        } catch (Exception e){
+        } catch (HttpClientErrorException.BadRequest e){
             log.error("Scoring failed for statementId={}: {}", statementID, e.getMessage());
             statement.setApplicationStatus(ApplicationStatus.CC_DENIED);
             addStatusHistory(statement, ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
@@ -149,11 +155,14 @@ public class DealServiceImpl implements DealService {
             message.setAddress(statement.getClient().getEmail());
             message.setTheme(ThemeEnum.STATEMENT_DENIED);
             message.setText("Your loan application was denied");
-            kafkaProducer.sendMessage("statement-denied", message);
+            kafkaProducer.sendMessage(kafkaTopics.getStatementDenied(), message);
 
             statementRepository.save(statement);
             log.info("finishRegistration. Statement {} moved to CC_DENIED", statementID);
             throw new ScoringDeniedException(e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("finishRegistration. Technical error after scoring for statementId={}: {}", statementID, e.getMessage(), e);
+            throw new RuntimeException("Technical error while calling calculator service: " + e.getMessage(), e);
         }
         log.info("finishRegistration. Output - Received CreditDto from calculator for statementID={}", statementID);
         log.debug("finishRegistration. CreditDto: {}", creditDto);
@@ -191,7 +200,7 @@ public class DealServiceImpl implements DealService {
         log.debug("finishRegistration. Client updated with client={}", client);
         log.debug("finishRegistration. Employment saved with employment={}", employment);
 
-        String documentsLink = "http://localhost:8084/deal/document/" + statementID + "/send";
+        String documentsLink = appConfig.getPublicUrl() + statementID + "/send";
         EmailMessageDto message = new EmailMessageDto();
         message.setStatementId(statementID.toString());
         message.setAddress(statement.getClient().getEmail());
@@ -202,7 +211,7 @@ public class DealServiceImpl implements DealService {
                         "%s",
                 documentsLink
         ));
-        kafkaProducer.sendMessage("create-documents", message);
+        kafkaProducer.sendMessage(kafkaTopics.getCreateDocuments(), message);
 
 
         log.info("finishRegistration. Kafka message sent {}", message);
@@ -240,7 +249,7 @@ public class DealServiceImpl implements DealService {
         statement.setApplicationStatus(ApplicationStatus.PREPARE_DOCUMENTS);
         addStatusHistory(statement, ApplicationStatus.PREPARE_DOCUMENTS, ChangeType.MANUAL);
 
-        String signLink = "http://localhost:8084/deal/document/" + statementId + "/sign";
+        String signLink = appConfig.getPublicUrl() + statementId + "/sign";
         EmailMessageDto message = new EmailMessageDto();
         message.setStatementId(statementId);
         message.setAddress(statement.getClient().getEmail());
@@ -251,7 +260,7 @@ public class DealServiceImpl implements DealService {
                         "%s",
                 signLink
         ));
-        kafkaProducer.sendMessage("send-documents", message);
+        kafkaProducer.sendMessage(kafkaTopics.getSendDocuments(), message);
         log.debug("sendDocuments(). massage was sent to kafka");
 
         statementRepository.save(statement);
@@ -275,7 +284,7 @@ public class DealServiceImpl implements DealService {
         statement.setApplicationStatus(ApplicationStatus.DOCUMENT_CREATED);
         addStatusHistory(statement, ApplicationStatus.DOCUMENT_CREATED, ChangeType.MANUAL);
 
-        String verifyCodeLink = "http://localhost:8084/deal/document/" + statementId + "/code?code=" + code;
+        String verifyCodeLink = appConfig.getPublicUrl() + statementId + "/code?code=" + code;
         EmailMessageDto message = new EmailMessageDto();
         message.setStatementId(statementId);
         message.setAddress(statement.getClient().getEmail());
@@ -286,7 +295,7 @@ public class DealServiceImpl implements DealService {
                         "%s\n\n",
                 code, verifyCodeLink
         ));
-        kafkaProducer.sendMessage("send-ses", message);
+        kafkaProducer.sendMessage(kafkaTopics.getSendSes(), message);
         log.debug("requestSignDocuments(). massage was sent to kafka");
 
         statementRepository.save(statement);
@@ -325,8 +334,11 @@ public class DealServiceImpl implements DealService {
         log.info("signDocuments(). Statement was set with ApplicationStatus {}", statement.getApplicationStatus());
 
         Credit credit = statement.getCredit();
+        if (credit == null){
+            log.error("signDocuments(). Credit not found for statement {}", statementId);
+            throw new IllegalStateException("Credit not found for statement: " + statementId);
+        }
         credit.setCreditStatus(CreditStatus.ISSUED);
-
         creditRepository.save(credit);
 
         EmailMessageDto message = new EmailMessageDto();
@@ -334,7 +346,7 @@ public class DealServiceImpl implements DealService {
         message.setAddress(statement.getClient().getEmail());
         message.setTheme(ThemeEnum.CREDIT_ISSUED);
         message.setText("Your credit has been issued!");
-        kafkaProducer.sendMessage("credit-issued", message);
+        kafkaProducer.sendMessage(kafkaTopics.getCreditIssued(), message);
         log.debug("signDocuments(). massage was sent to kafka");
 
         statementRepository.save(statement);

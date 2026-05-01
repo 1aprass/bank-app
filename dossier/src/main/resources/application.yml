@@ -40,4 +40,4 @@ logging:
     org.springframework.security: DEBUG
 
 dossier:
-  service: "laprasspop@yandex.ru"
+  service: ${EMAIL_FROM:${EMAIL_USERNAME}}

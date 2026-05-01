@@ -71,9 +71,9 @@ public class DealController {
     @Operation(summary = "sign documents")
     public ResponseEntity<Void> signDocuments(
             @PathVariable String statementId,
-            @RequestParam String sesCode) {
+            @RequestParam String code) {
         log.info("Input. DealController signDocuments(). Request with {} sent", statementId);
-        dealService.signDocuments(statementId, sesCode);
+        dealService.signDocuments(statementId, code);
         return ResponseEntity.ok().build();
     }
 

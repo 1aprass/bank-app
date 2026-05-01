@@ -2,6 +2,7 @@ package ru.neoflex.dossier.service;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,6 +13,7 @@ import ru.neoflex.dossier.dto.EmailMessageDto;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Setter
 public class EmailService {
 
     @Value("${dossier.service}")

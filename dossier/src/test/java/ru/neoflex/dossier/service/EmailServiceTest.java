@@ -1,5 +1,6 @@
 package ru.neoflex.dossier.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +25,11 @@ public class EmailServiceTest {
     @InjectMocks
     private EmailService emailService;
 
+    @BeforeEach
+    void setUp() {
+        emailService.setFromEmail("test@yandex.ru");
+    }
+
     @Test
     void sendEmail_shouldSendWithCorrectSubjectAndBody() {
         EmailMessageDto dto = new EmailMessageDto();
@@ -39,6 +45,7 @@ public class EmailServiceTest {
         assertThat(sentMessage.getTo()).containsExactly("test@example.com");
         assertThat(sentMessage.getSubject()).isEqualTo("CREATE_DOCUMENTS");
         assertThat(sentMessage.getText()).isEqualTo("Your loan is approved");
+        assertThat(sentMessage.getFrom()).isEqualTo("test@yandex.ru");
     }
 
     @Test
