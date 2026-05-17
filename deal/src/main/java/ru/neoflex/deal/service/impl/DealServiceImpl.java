@@ -19,6 +19,7 @@ import ru.neoflex.deal.exception.ScoringDeniedException;
 import ru.neoflex.deal.kafka.KafkaProducerService;
 import ru.neoflex.deal.mapper.CreditMapper;
 import ru.neoflex.deal.mapper.EmploymentMapper;
+import ru.neoflex.deal.mapper.StatementMapper;
 import ru.neoflex.deal.repository.*;
 import ru.neoflex.deal.service.DealService;
 
@@ -40,6 +41,7 @@ public class DealServiceImpl implements DealService {
     private final EmploymentRepository employmentRepository;
     private final CreditMapper creditMapper;
     private final EmploymentMapper employmentMapper;
+    private final StatementMapper statementMapper;
     private final PassportRepository passportRepository;
     private final KafkaProducerService kafkaProducer;
     private final KafkaTopicsConfig kafkaTopics;
@@ -353,6 +355,32 @@ public class DealServiceImpl implements DealService {
 
         log.info("Output - signDocuments(). Credit issued for {}", statementId);
 
+    }
+
+    @Override
+    public StatementDto getStatementById(String statementId){
+        log.info("Input - getStatementById(). statementId {}", statementId);
+
+        UUID statementUUID;
+        try{
+            statementUUID = UUID.fromString(statementId);
+        } catch(IllegalArgumentException ex){
+            log.error("Invalid UUID format for statementId={}", statementId, ex);
+            throw new IllegalArgumentException("Invalid statementId format: " + statementId);
+        }
+
+        Statement statement = statementRepository.findById(statementUUID)
+                .orElseThrow(() -> new EntityNotFoundException("Statement not found"));
+
+        return statementMapper.toDto(statement);
+    }
+
+    @Override
+    public List<StatementDto> getAllStatements(){
+        log.info("Input - getAllStatements().");
+        List<Statement> response = statementRepository.findAll();
+        log.debug("getAllStatements(). Found {} statements", response.size());
+        return response.stream().map(statementMapper::toDto).toList();
     }
 
     private void createScoringDataDto(ScoringDataDto scoringDataDto,

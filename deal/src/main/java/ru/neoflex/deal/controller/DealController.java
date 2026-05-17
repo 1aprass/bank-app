@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.neoflex.deal.dto.FinishRegistrationRequestDto;
 import ru.neoflex.deal.dto.LoanOfferDto;
 import ru.neoflex.deal.dto.LoanStatementRequestDto;
+import ru.neoflex.deal.dto.StatementDto;
 import ru.neoflex.deal.service.DealService;
 
 import java.util.List;
@@ -75,6 +76,24 @@ public class DealController {
         log.info("Input. DealController signDocuments(). Request with {} sent", statementId);
         dealService.signDocuments(statementId, code);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/admin/statement/{statementId}")
+    @Operation(summary = "get statement by id")
+    public ResponseEntity<StatementDto> getStatementById(@PathVariable String statementId){
+        log.info("Input. DealController getStatement(). Request with {} sent", statementId);
+        StatementDto response = dealService.getStatementById(statementId);
+        log.info("Output. DealController getStatement(). Response was received");
+        return ResponseEntity.ok(response);
+
+    }
+
+    @GetMapping("/admin/statement")
+    @Operation(summary = "get all statements")
+    public ResponseEntity<List<StatementDto>> getAllStatements(){
+        log.info("Input. DealController getStatement(). Request sent");
+        List<StatementDto> response = dealService.getAllStatements();
+        return ResponseEntity.ok(response);
     }
 
 }
