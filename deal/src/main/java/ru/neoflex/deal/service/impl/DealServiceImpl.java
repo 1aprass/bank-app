@@ -372,7 +372,9 @@ public class DealServiceImpl implements DealService {
         Statement statement = statementRepository.findById(statementUUID)
                 .orElseThrow(() -> new EntityNotFoundException("Statement not found"));
 
-        return statementMapper.toDto(statement);
+        StatementDto result = statementMapper.toDto(statement);
+        log.info("Output - getStatementById(). Statement found for id {}", statementId);
+        return result;
     }
 
     @Override
@@ -380,6 +382,7 @@ public class DealServiceImpl implements DealService {
         log.info("Input - getAllStatements().");
         List<Statement> response = statementRepository.findAll();
         log.debug("getAllStatements(). Found {} statements", response.size());
+        log.info("Output - getAllStatements().");
         return response.stream().map(statementMapper::toDto).toList();
     }
 

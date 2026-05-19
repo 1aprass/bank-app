@@ -1,5 +1,7 @@
 package ru.neoflex.gateway.controller;
 
+import ru.neoflex.gateway.client.DealGatewayClient;
+import ru.neoflex.gateway.client.StatementGatewayClient;
 import ru.neoflex.gateway.dto.LoanOfferDto;
 import ru.neoflex.gateway.dto.LoanStatementRequestDto;
 
@@ -9,12 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestClient;
 import ru.neoflex.gateway.exception.GlobalExceptionHandler;
 
 import java.math.BigDecimal;
@@ -25,11 +24,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.mockito.Mockito.lenient;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 public class StatementGatewayControllerTest {
@@ -37,37 +33,28 @@ public class StatementGatewayControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
 
-    @Mock private RestClient dealRestClient;
-    @Mock private RestClient statementRestClient;
-    @Mock private RestClient.RequestBodyUriSpec bodyUriSpec;
-    @Mock private RestClient.RequestBodySpec bodySpec;
-    @Mock private RestClient.ResponseSpec responseSpec;
+    @Mock
+    private DealGatewayClient dealClient;
+
+    @Mock
+    private StatementGatewayClient statementClient;
 
     @BeforeEach
     void setUp() {
-        GatewayController controller = new GatewayController(dealRestClient, statementRestClient);
+        GatewayController controller = new GatewayController(dealClient, statementClient);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
-
-        lenient().when(statementRestClient.post()).thenReturn(bodyUriSpec);
-        lenient().when(bodyUriSpec.uri(anyString())).thenReturn(bodySpec);
-        lenient().when(bodyUriSpec.uri(anyString(), any(Object.class))).thenReturn(bodySpec);
-        lenient().when(bodyUriSpec.uri(anyString(), any(Object.class), any(Object.class))).thenReturn(bodySpec);
-        lenient().when(bodyUriSpec.uri(anyString(), (Object[]) any())).thenReturn(bodySpec);
-        lenient().when(bodySpec.body(any(Object.class))).thenReturn(bodySpec);
-        lenient().when(bodySpec.retrieve()).thenReturn(responseSpec);
-        lenient().when(responseSpec.toBodilessEntity()).thenReturn(ResponseEntity.ok().build());
     }
 
 
     @Test
     void prescoring_shouldReturnOffers() throws Exception {
         List<LoanOfferDto> offers = List.of(createOffer(), createOffer(), createOffer(), createOffer());
-        when(responseSpec.body(any(ParameterizedTypeReference.class))).thenReturn(offers);
+        when(statementClient.createStatement(any())).thenReturn(offers);
 
         mockMvc.perform(post("/api")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +73,7 @@ public class StatementGatewayControllerTest {
 
     @Test
     void prescoring_serviceThrowsException_shouldReturnInternalServerError() throws Exception {
-        lenient().when(responseSpec.body(any(ParameterizedTypeReference.class)))
+        when(statementClient.createStatement(any()))
                 .thenThrow(new RuntimeException("Statement service unavailable"));
 
         mockMvc.perform(post("/api")
@@ -114,15 +101,15 @@ public class StatementGatewayControllerTest {
 
     @Test
     void selectOffer_serviceThrowsException_shouldReturnInternalServerError() throws Exception {
-        lenient().when(responseSpec.toBodilessEntity())
-                .thenThrow(new RuntimeException("Statement service unavailable"));
+        doThrow(new RuntimeException("Statement service unavailable"))
+                .when(statementClient).selectOffer(any());
 
         mockMvc.perform(post("/api/offer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createOffer())))
                 .andExpect(status().isInternalServerError());
     }
-    
+
 
     private LoanStatementRequestDto createValidRequest() {
         LoanStatementRequestDto request = new LoanStatementRequestDto();

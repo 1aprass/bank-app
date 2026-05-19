@@ -93,6 +93,7 @@ public class DealController {
     public ResponseEntity<List<StatementDto>> getAllStatements(){
         log.info("Input. DealController getStatement(). Request sent");
         List<StatementDto> response = dealService.getAllStatements();
+        log.info("Output. DealController getAllStatements(). Returning {} statements", response.size());
         return ResponseEntity.ok(response);
     }
 
