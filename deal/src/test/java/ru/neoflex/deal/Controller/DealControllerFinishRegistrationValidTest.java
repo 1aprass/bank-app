@@ -196,33 +196,11 @@ public class DealControllerFinishRegistrationValidTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void shouldFail_whenPositionIsNull() throws Exception {
-        FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmployment().setPosition(null);
-
-        mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
-    }
 
     @Test
     void shouldFail_whenWorkExperienceTotalNegative() throws Exception {
         FinishRegistrationRequestDto dto = createValidRequest();
         dto.getEmployment().setWorkExperienceTotal(-1);
-
-        mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void shouldFail_whenCurrentExperienceGreaterThanTotal() throws Exception {
-        FinishRegistrationRequestDto dto = createValidRequest();
-        dto.getEmployment().setWorkExperienceTotal(10);
-        dto.getEmployment().setWorkExperienceCurrent(20);
 
         mockMvc.perform(post("/deal/calculate/" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)

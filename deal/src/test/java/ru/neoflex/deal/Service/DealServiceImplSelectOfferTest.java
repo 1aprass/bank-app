@@ -7,6 +7,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.neoflex.deal.client.DealClient;
+import ru.neoflex.deal.config.AppConfig;
+import ru.neoflex.deal.config.KafkaTopicsConfig;
 import ru.neoflex.deal.dto.LoanOfferDto;
 import ru.neoflex.deal.dto.StatementStatusHistoryDto;
 import ru.neoflex.deal.entity.Client;
@@ -14,7 +17,11 @@ import ru.neoflex.deal.entity.Passport;
 import ru.neoflex.deal.entity.Statement;
 import ru.neoflex.deal.enums.ApplicationStatus;
 import ru.neoflex.deal.enums.ChangeType;
-import ru.neoflex.deal.repository.StatementRepository;
+import ru.neoflex.deal.kafka.KafkaProducerService;
+import ru.neoflex.deal.mapper.CreditMapper;
+import ru.neoflex.deal.mapper.EmploymentMapper;
+import ru.neoflex.deal.mapper.StatementMapper;
+import ru.neoflex.deal.repository.*;
 import ru.neoflex.deal.service.impl.DealServiceImpl;
 
 import java.math.BigDecimal;
@@ -33,6 +40,28 @@ import static org.mockito.Mockito.when;
 public class DealServiceImplSelectOfferTest {
     @Mock
     private StatementRepository statementRepository;
+    @Mock
+    private ClientRepository clientRepository;
+    @Mock
+    private CreditRepository creditRepository;
+    @Mock
+    private EmploymentRepository employmentRepository;
+    @Mock
+    private PassportRepository passportRepository;
+    @Mock
+    private DealClient dealClient;
+    @Mock
+    private CreditMapper creditMapper;
+    @Mock
+    private EmploymentMapper employmentMapper;
+    @Mock
+    private StatementMapper statementMapper;
+    @Mock
+    private KafkaProducerService kafkaProducer;
+    @Mock
+    private KafkaTopicsConfig kafkaTopics;
+    @Mock
+    private AppConfig appConfig;
 
     @InjectMocks
     private DealServiceImpl dealService;
@@ -66,7 +95,7 @@ public class DealServiceImplSelectOfferTest {
         request.setIsInsuranceEnabled(true);
         request.setIsSalaryClient(false);
 
-        when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
+        when(statementRepository.findByIdWithLock(statementId)).thenReturn(Optional.of(statement));
         when(statementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         dealService.selectOffer(request);
@@ -93,12 +122,12 @@ public class DealServiceImplSelectOfferTest {
         LoanOfferDto request = new LoanOfferDto();
         request.setStatementId(statementId);
 
-        when(statementRepository.findById(statementId)).thenReturn(Optional.empty());
+        when(statementRepository.findByIdWithLock(statementId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> dealService.selectOffer(request));
 
-        assertTrue(ex.getMessage().contains("Statement not found with id"));
+        assertTrue(ex.getMessage().contains("Statement not found"));
     }
 
     @Test
@@ -122,7 +151,7 @@ public class DealServiceImplSelectOfferTest {
         request.setIsInsuranceEnabled(true);
         request.setIsSalaryClient(false);
 
-        when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
+        when(statementRepository.findByIdWithLock(statementId)).thenReturn(Optional.of(statement));
         when(statementRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         dealService.selectOffer(request);

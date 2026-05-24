@@ -7,12 +7,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.neoflex.deal.config.AppConfig;
+import ru.neoflex.deal.config.KafkaTopicsConfig;
 import ru.neoflex.deal.dto.*;
 import ru.neoflex.deal.entity.*;
 import ru.neoflex.deal.client.DealClient;
 import ru.neoflex.deal.enums.ApplicationStatus;
 import ru.neoflex.deal.enums.Gender;
 import ru.neoflex.deal.enums.MaritalStatus;
+import ru.neoflex.deal.kafka.KafkaProducerService;
 import ru.neoflex.deal.mapper.*;
 import ru.neoflex.deal.repository.*;
 import ru.neoflex.deal.service.impl.DealServiceImpl;
@@ -44,6 +47,16 @@ public class DealServiceImplFinishRegistrationTest {
     private CreditMapper creditMapper;
     @Mock
     private EmploymentMapper employmentMapper;
+    @Mock
+    private PassportRepository passportRepository;
+    @Mock
+    private StatementMapper statementMapper;
+    @Mock
+    private KafkaProducerService kafkaProducer;
+    @Mock
+    private KafkaTopicsConfig kafkaTopics;
+    @Mock
+    private AppConfig appConfig;
 
     @InjectMocks
     private DealServiceImpl dealService;
@@ -83,6 +96,8 @@ public class DealServiceImplFinishRegistrationTest {
         loanOfferDto.setRate(BigDecimal.valueOf(15));
         loanOfferDto.setIsInsuranceEnabled(true);
         loanOfferDto.setIsSalaryClient(false);
+
+        lenient().when(appConfig.getPublicUrl()).thenReturn("http://localhost:8081/deal/document/");
     }
 
     @Test

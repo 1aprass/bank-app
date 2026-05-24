@@ -16,7 +16,94 @@ services:
       - zookeeper
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
       - "9092:9092"
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "kafka:9092", "--list" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: bank-app
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d bank-app" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  calculator:
+    build:
+      context: ./calculator
+    container_name: calculator
+    ports:
+      - "8080:8080"
+
+  deal:
+    build:
+      context: ./deal
+    container_name: deal
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bank-app
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      DEAL_SERVICE_BASE_URL: http://calculator:8080
+      DEAL_APP_PUBLIC_URL: http://localhost:8086/deal/document/
+
+  statement:
+    build:
+      context: ./statement
+    container_name: statement
+    ports:
+      - "8082:8082"
+    depends_on:
+      - deal
+    environment:
+      STATEMENT_CLIENT_BASE_URL: http://deal:8081
+
+  dossier:
+    build:
+      context: ./dossier
+    container_name: dossier
+    ports:
+      - "8084:8084"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: kafka:9092
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_FROM: ${EMAIL_USERNAME}
+
+  gateway:
+    build:
+      context: ./gateway
+    container_name: gateway
+    ports:
+      - "8086:8086"
+    depends_on:
+      - statement
+      - deal
+    environment:
+      GATEWAY_URLS_STATEMENT_URL: http://statement:8082
+      GATEWAY_URLS_DEAL_URL: http://deal:8081
+
+volumes:
+  postgres-data:
