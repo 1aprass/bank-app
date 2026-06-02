@@ -4,14 +4,20 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import ru.neoflex.deal.dto.LoanOfferDto;
+import ru.neoflex.deal.entity.Client;
 import ru.neoflex.deal.entity.Statement;
 import ru.neoflex.deal.enums.ApplicationStatus;
+import ru.neoflex.deal.kafka.KafkaProducerService;
+import ru.neoflex.deal.repository.ClientRepository;
 import ru.neoflex.deal.repository.StatementRepository;
 import ru.neoflex.deal.service.DealService;
 
@@ -32,15 +38,28 @@ public class DealServiceLockTest {
     private StatementRepository statementRepository;
 
     @Autowired
+    private ClientRepository clientRepository;
+
+    @Autowired
     private TransactionServiceTest transactionServiceTest;
+
+    @MockitoBean
+    private KafkaProducerService kafkaProducer;
 
 
     private UUID statementId;
 
     @BeforeAll
     void setup() {
+        Client client = new Client();
+        client.setFirstName("Test");
+        client.setLastName("User");
+        client.setEmail("test-" + UUID.randomUUID() + "@test.com");
+        clientRepository.save(client);
+
         Statement st = new Statement();
         st.setApplicationStatus(ApplicationStatus.PREAPPROVAL);
+        st.setClient(client);
         statementRepository.save(st);
         statementId = st.getStatementId();
     }
